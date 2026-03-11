@@ -1,4 +1,9 @@
 import { useState, useEffect } from 'react'
+import {
+  Film, Clapperboard, Star, Search, Globe, ListChecks, Users,
+  PenLine, BookOpen, BarChart2, Pencil, ChevronRight, Mail,
+  Lock, CheckCircle2, Sparkles, Tv2
+} from 'lucide-react'
 import './index.css'
 
 /* ── Navbar ───────────────────────────────────── */
@@ -13,7 +18,7 @@ function Navbar() {
     <nav className={`navbar ${solid ? 'solid' : ''}`}>
       <div className="container nav-inner">
         <a href="#" className="nav-logo">
-          <span className="nav-logo-icon">🎬</span>
+          <span className="nav-logo-icon"><Clapperboard size={26} strokeWidth={2.2} /></span>
           <span className="nav-logo-text">Tu<em>Peli</em></span>
         </a>
         <a href="#cta" className="btn-primary nav-cta">Únete — es gratis</a>
@@ -35,8 +40,8 @@ function Hero() {
       <div className="container">
         <div className="hero-inner">
           <div className="hero-badge">
-            <div className="chip">
-              <span className="badge-dot" style={{marginRight:8}} />
+            <div className="chip" style={{display:'inline-flex',alignItems:'center',gap:6}}>
+              <span className="badge-dot" />
               Próximamente
             </div>
           </div>
@@ -55,12 +60,13 @@ function Hero() {
 
           <div className="hero-actions">
             <a href="#cta" className="btn-primary">
-              <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                <path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
+              <Mail size={17} strokeWidth={2.5} />
               Avísame cuando lance
             </a>
-            <a href="#que-sera" className="btn-ghost">¿Qué será Tu Peli?</a>
+            <a href="#que-sera" className="btn-ghost">
+              ¿Qué será Tu Peli?
+              <ChevronRight size={16} strokeWidth={2.5} />
+            </a>
           </div>
 
           {/* Stats */}
@@ -87,12 +93,12 @@ function Hero() {
 
 /* ── Features ─────────────────────────────────── */
 const FEATURES = [
-  { icon: '🎯', title: 'Reseñas detalladas',   desc: 'Análisis profundos de cada película: argumento, dirección, actuaciones y mucho más, sin spoilers.' },
-  { icon: '⭐', title: 'Calificaciones reales', desc: 'Puntuaciones honestas de la comunidad. Sin bots, sin pagos, solo la opinión real de los espectadores.' },
-  { icon: '🔍', title: 'Búsqueda avanzada',    desc: 'Filtra por título, género, director, año de estreno, duración o calificación. Encuentra justo lo que buscas.' },
-  { icon: '🌍', title: 'Cine de todo el mundo', desc: 'Desde blockbusters de Hollywood hasta cine latinoamericano, europeo, asiático y de autor.' },
-  { icon: '📋', title: 'Tu lista personal',    desc: 'Guarda las películas que quieres ver, marca las que ya viste y arma tu colección de favoritas.' },
-  { icon: '💬', title: 'Comunidad cinéfila',   desc: 'Comenta, debate y comparte tu perspectiva. Descubre qué piensan otros amantes del cine.' },
+  { icon: <PenLine  size={22} strokeWidth={1.8} />, title: 'Reseñas detalladas',    desc: 'Análisis profundos de cada película: argumento, dirección, actuaciones y mucho más, sin spoilers.' },
+  { icon: <Star     size={22} strokeWidth={1.8} />, title: 'Calificaciones reales',  desc: 'Puntuaciones honestas de la comunidad. Sin bots, sin pagos, solo la opinión real de los espectadores.' },
+  { icon: <Search   size={22} strokeWidth={1.8} />, title: 'Búsqueda avanzada',      desc: 'Filtra por título, género, director, año de estreno, duración o calificación. Encuentra justo lo que buscas.' },
+  { icon: <Globe    size={22} strokeWidth={1.8} />, title: 'Cine de todo el mundo',  desc: 'Desde blockbusters de Hollywood hasta cine latinoamericano, europeo, asiático y de autor.' },
+  { icon: <ListChecks size={22} strokeWidth={1.8} />, title: 'Tu lista personal',   desc: 'Guarda las películas que quieres ver, marca las que ya viste y arma tu colección de favoritas.' },
+  { icon: <Users    size={22} strokeWidth={1.8} />, title: 'Comunidad cinéfila',     desc: 'Comenta, debate y comparte tu perspectiva. Descubre qué piensan otros amantes del cine.' },
 ]
 
 function Features() {
@@ -127,10 +133,10 @@ function Features() {
 
 /* ── How it will work ─────────────────────────── */
 const STEPS = [
-  { num:'01', emoji:'🔎', title:'Busca tu película',     desc:'Escribe el nombre, el género o el estado de ánimo y Tu Peli te mostrará las mejores opciones.' },
-  { num:'02', emoji:'📖', title:'Lee la ficha completa', desc:'Sinopsis, reparto, director, duración, tráiler y la opinión resumida de la comunidad.' },
-  { num:'03', emoji:'⭐', title:'Califica y reseña',      desc:'Dale tu puntuación personal y escribe tu reseña para ayudar a otros a decidir.' },
-  { num:'04', emoji:'📋', title:'Organiza tus listas',   desc:'Pendientes, vistas, favoritas. Tu historial cinematográfico siempre a la mano.' },
+  { num:'01', icon: <Search      size={24} strokeWidth={1.8} />, title:'Busca tu película',     desc:'Escribe el nombre, el género o el estado de ánimo y Tu Peli te mostrará las mejores opciones.' },
+  { num:'02', icon: <Film        size={24} strokeWidth={1.8} />, title:'Lee la ficha completa', desc:'Sinopsis, reparto, director, duración, tráiler y la opinión resumida de la comunidad.' },
+  { num:'03', icon: <Star        size={24} strokeWidth={1.8} />, title:'Califica y reseña',      desc:'Dale tu puntuación personal y escribe tu reseña para ayudar a otros a decidir.' },
+  { num:'04', icon: <ListChecks  size={24} strokeWidth={1.8} />, title:'Organiza tus listas',   desc:'Pendientes, vistas, favoritas. Tu historial cinematográfico siempre a la mano.' },
 ]
 
 function HowItWorks() {
@@ -153,7 +159,7 @@ function HowItWorks() {
           {STEPS.map(s => (
             <div className="how-card glass" key={s.num}>
               <div className="how-num">{s.num}</div>
-              <div className="how-emoji">{s.emoji}</div>
+              <div className="how-icon">{s.icon}</div>
               <div className="how-title">{s.title}</div>
               <div className="how-desc">{s.desc}</div>
             </div>
@@ -191,7 +197,7 @@ function CTA() {
 
           {done ? (
             <div style={{display:'flex',alignItems:'center',gap:14,background:'rgba(34,197,94,.1)',border:'1px solid rgba(34,197,94,.22)',borderRadius:14,padding:'18px 28px'}}>
-              <span style={{fontSize:'2rem'}}>🎬</span>
+              <CheckCircle2 size={36} color="#4ade80" strokeWidth={1.8} />
               <div>
                 <strong style={{display:'block',color:'#4ade80',marginBottom:4}}>¡Genial, ya estás en la lista!</strong>
                 <span style={{fontSize:'0.88rem',color:'var(--t2)'}}>Te avisaremos en cuanto lancemos. Gracias por tu apoyo.</span>
@@ -214,10 +220,15 @@ function CTA() {
                 onFocus={e => e.target.style.borderColor='var(--purple)'}
                 onBlur={e  => e.target.style.borderColor='var(--border)'}
               />
-              <button type="submit" className="btn-primary">Avísame →</button>
+              <button type="submit" className="btn-primary">
+                Avísame
+                <ChevronRight size={17} strokeWidth={2.5} />
+              </button>
             </form>
           )}
-          <p className="cta-note">🔒 Sin spam. Cancela cuando quieras.</p>
+          <p className="cta-note" style={{display:'flex',alignItems:'center',gap:6,justifyContent:'center'}}>
+            <Lock size={13} strokeWidth={2.5} style={{opacity:0.6}} /> Sin spam. Cancela cuando quieras.
+          </p>
         </div>
       </div>
     </section>
@@ -230,10 +241,10 @@ function Footer() {
     <footer className="footer">
       <div className="container footer-inner">
         <div className="foot-brand">
-          <span>🎬</span>
+          <Clapperboard size={20} strokeWidth={2} style={{color:'var(--purple-light)'}} />
           <span>Tu<em>Peli</em></span>
         </div>
-        <p className="foot-note">© 2025 Tu Peli · Hecho con ❤️ para cinéfilos</p>
+        <p className="foot-note">© 2025 Tu Peli · Hecho con <span style={{color:'#f87171'}}>♥</span> para cinéfilos</p>
       </div>
     </footer>
   )
