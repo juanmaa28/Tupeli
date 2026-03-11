@@ -1,9 +1,11 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import {
   Film, Clapperboard, Star, Search, Globe, ListChecks, Users,
   PenLine, BookOpen, BarChart2, Pencil, ChevronRight, Mail,
-  Lock, CheckCircle2, Sparkles, Tv2
+  Lock, CheckCircle2, Sparkles, Tv2, X, Loader2, ArrowRight,
+  ImageOff
 } from 'lucide-react'
+import { supabase } from './supabaseClient'
 import './index.css'
 
 /* ── Navbar ───────────────────────────────────── */
@@ -21,7 +23,15 @@ function Navbar() {
           <span className="nav-logo-icon"><Clapperboard size={26} strokeWidth={2.2} /></span>
           <span className="nav-logo-text">Tu<em>Peli</em></span>
         </a>
-        <a href="#cta" className="btn-primary nav-cta">Únete — es gratis</a>
+        <div className="nav-links-desktop">
+          <a href="#buscar">Buscar películas</a>
+          <a href="#que-sera">Características</a>
+          <a href="#como-funciona">Cómo funciona</a>
+        </div>
+        <a href="#buscar" className="btn-primary nav-cta">
+          <Search size={15} strokeWidth={2.5} />
+          Explorar
+        </a>
       </div>
     </nav>
   )
@@ -42,7 +52,7 @@ function Hero() {
           <div className="hero-badge">
             <div className="chip" style={{display:'inline-flex',alignItems:'center',gap:6}}>
               <span className="badge-dot" />
-              Próximamente
+              Ya disponible
             </div>
           </div>
 
@@ -53,18 +63,18 @@ function Hero() {
           </h1>
 
           <p className="hero-desc">
-            <strong>Tu Peli</strong> será la guía cinematográfica definitiva en español.
-            Reseñas detalladas, calificaciones reales, búsqueda avanzada y
-            una comunidad que ama el cine tanto como tú.
+            <strong>Tu Peli</strong> es tu guía cinematográfica definitiva en español.
+            Busca entre miles de películas, lee reseñas detalladas, descubre
+            calificaciones reales y encuentra tu próxima obsesión cinematográfica.
           </p>
 
           <div className="hero-actions">
-            <a href="#cta" className="btn-primary">
-              <Mail size={17} strokeWidth={2.5} />
-              Avísame cuando lance
+            <a href="#buscar" className="btn-primary">
+              <Search size={17} strokeWidth={2.5} />
+              Buscar películas
             </a>
             <a href="#que-sera" className="btn-ghost">
-              ¿Qué será Tu Peli?
+              Ver características
               <ChevronRight size={16} strokeWidth={2.5} />
             </a>
           </div>
@@ -87,6 +97,200 @@ function Hero() {
           </div>
         </div>
       </div>
+    </section>
+  )
+}
+
+/* ── Movie Search ──────────────────────────────── */
+const GENRES = ['Todos','Action','Drama','Sci-Fi','Crime','Comedy','Fantasy','Thriller','Horror','Animation','Romance','War','Mystery','Adventure','History','Western','Biography']
+
+function MovieSearch() {
+  const [query, setQuery] = useState('')
+  const [genre, setGenre] = useState('Todos')
+  const [movies, setMovies] = useState([])
+  const [loading, setLoading] = useState(false)
+  const [initial, setInitial] = useState(true)
+  const [selectedMovie, setSelectedMovie] = useState(null)
+  const debounceRef = useRef(null)
+
+  const fetchMovies = useCallback(async (searchQuery, selectedGenre) => {
+    setLoading(true)
+    setInitial(false)
+    try {
+      let q = supabase.from('movies').select('*')
+      if (searchQuery.trim()) {
+        q = q.ilike('title', `%${searchQuery.trim()}%`)
+      }
+      if (selectedGenre !== 'Todos') {
+        q = q.ilike('genre', `%${selectedGenre}%`)
+      }
+      q = q.order('rating', { ascending: false }).limit(30)
+      const { data, error } = await q
+      if (error) throw error
+      setMovies(data || [])
+    } catch (err) {
+      console.error('Error fetching movies:', err)
+      setMovies([])
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  // Load popular movies on mount
+  useEffect(() => {
+    fetchMovies('', 'Todos')
+  }, [fetchMovies])
+
+  // Debounced search
+  const handleSearchChange = (val) => {
+    setQuery(val)
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => {
+      fetchMovies(val, genre)
+    }, 350)
+  }
+
+  const handleGenreChange = (g) => {
+    setGenre(g)
+    fetchMovies(query, g)
+  }
+
+  const renderStars = (rating) => {
+    const stars = Math.round(Number(rating) / 2)
+    return (
+      <div className="movie-stars">
+        {[1,2,3,4,5].map(i => (
+          <Star key={i} size={13} strokeWidth={0} fill={i <= stars ? '#F59E0B' : '#2A2A40'} />
+        ))}
+      </div>
+    )
+  }
+
+  return (
+    <section className="search-section" id="buscar">
+      <div className="container">
+        <div className="search-header">
+          <div className="chip">Explorar</div>
+          <h2 className="section-title">
+            Busca tu próxima<br/>
+            <span className="gradient-text">película favorita</span>
+          </h2>
+          <p className="section-sub">
+            Explora nuestra base de datos con miles de películas.
+            Filtra por nombre o género para encontrar exactamente lo que quieres.
+          </p>
+        </div>
+
+        {/* Search bar */}
+        <div className="search-bar-wrapper">
+          <div className="search-bar glass">
+            <Search size={20} strokeWidth={2} className="search-bar-icon" />
+            <input
+              type="text"
+              placeholder="Busca por título... ej: Inception, Dune, Parasite"
+              value={query}
+              onChange={e => handleSearchChange(e.target.value)}
+              className="search-input"
+            />
+            {query && (
+              <button className="search-clear" onClick={() => { setQuery(''); fetchMovies('', genre) }}>
+                <X size={16} strokeWidth={2.5} />
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Genre pills */}
+        <div className="genre-pills">
+          {GENRES.map(g => (
+            <button
+              key={g}
+              className={`genre-pill ${genre === g ? 'active' : ''}`}
+              onClick={() => handleGenreChange(g)}
+            >
+              {g === 'Todos' ? 'Todos' : g}
+            </button>
+          ))}
+        </div>
+
+        {/* Results */}
+        {loading ? (
+          <div className="search-loading">
+            <Loader2 size={32} strokeWidth={2} className="spin" />
+            <span>Buscando películas...</span>
+          </div>
+        ) : movies.length === 0 && !initial ? (
+          <div className="search-empty">
+            <Film size={48} strokeWidth={1.2} style={{opacity:0.3}} />
+            <h3>No encontramos resultados</h3>
+            <p>Intenta con otro título o cambia el filtro de género.</p>
+          </div>
+        ) : (
+          <div className="movies-grid">
+            {movies.map(movie => (
+              <div className="movie-card glass" key={movie.id} onClick={() => setSelectedMovie(movie)}>
+                <div className="movie-poster">
+                  {movie.image_url ? (
+                    <img
+                      src={movie.image_url}
+                      alt={movie.title}
+                      loading="lazy"
+                      onError={e => { e.target.style.display='none'; e.target.nextSibling.style.display='flex' }}
+                    />
+                  ) : null}
+                  <div className="movie-poster-fallback" style={movie.image_url ? {display:'none'} : {}}>
+                    <Film size={36} strokeWidth={1.2} />
+                  </div>
+                  <div className="movie-poster-overlay">
+                    <span className="movie-see-more">
+                      <ArrowRight size={18} strokeWidth={2.5} />
+                      Ver detalle
+                    </span>
+                  </div>
+                  <div className="movie-genre-badge">{movie.genre}</div>
+                </div>
+                <div className="movie-info">
+                  <div className="movie-rating-row">
+                    {renderStars(movie.rating)}
+                    <span className="movie-rating-num">{Number(movie.rating).toFixed(1)}</span>
+                  </div>
+                  <h3 className="movie-card-title">{movie.title}</h3>
+                  <p className="movie-card-desc">{movie.description}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Movie detail modal */}
+      {selectedMovie && (
+        <div className="modal-backdrop" onClick={() => setSelectedMovie(null)}>
+          <div className="modal-content glass" onClick={e => e.stopPropagation()}>
+            <button className="modal-close" onClick={() => setSelectedMovie(null)}>
+              <X size={22} strokeWidth={2.5} />
+            </button>
+            <div className="modal-body">
+              <div className="modal-poster">
+                {selectedMovie.image_url ? (
+                  <img src={selectedMovie.image_url} alt={selectedMovie.title} />
+                ) : (
+                  <div className="modal-poster-fallback"><Film size={64} strokeWidth={1} /></div>
+                )}
+              </div>
+              <div className="modal-info">
+                <div className="modal-genre-chip">{selectedMovie.genre}</div>
+                <h2 className="modal-title">{selectedMovie.title}</h2>
+                <div className="modal-rating">
+                  {renderStars(selectedMovie.rating)}
+                  <span className="modal-rating-num">{Number(selectedMovie.rating).toFixed(1)}<span style={{color:'var(--t3)',fontWeight:400}}>/10</span></span>
+                </div>
+                <p className="modal-desc">{selectedMovie.description}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   )
 }
@@ -256,6 +460,7 @@ export default function App() {
     <>
       <Navbar />
       <Hero />
+      <MovieSearch />
       <Features />
       <HowItWorks />
       <CTA />
