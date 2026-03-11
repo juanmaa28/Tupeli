@@ -102,7 +102,7 @@ function Hero() {
 }
 
 /* ── Movie Search ──────────────────────────────── */
-const GENRES = ['Todos','Action','Drama','Sci-Fi','Crime','Comedy','Fantasy','Thriller','Horror','Animation','Romance','War','Mystery','Adventure','History','Western','Biography']
+const GENRES = ['Todos','Acción','Drama','Ciencia Ficción','Crimen','Comedia','Fantasía','Suspense','Terror','Animación','Romance','Guerra','Misterio','Aventura','Historia','Western','Biografía']
 
 function MovieSearch() {
   const [query, setQuery] = useState('')
