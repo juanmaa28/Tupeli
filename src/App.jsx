@@ -3,13 +3,164 @@ import {
   Film, Clapperboard, Star, Search, Globe, ListChecks, Users,
   PenLine, BookOpen, BarChart2, Pencil, ChevronRight, Mail,
   Lock, CheckCircle2, Sparkles, Tv2, X, Loader2, ArrowRight,
-  ImageOff
+  ImageOff, LogIn, LogOut, Plus, Edit, Trash2, User
 } from 'lucide-react'
 import { supabase } from './supabaseClient'
 import './index.css'
+import './auth.css'
+
+/* ── Auth Modal ───────────────────────────────── */
+function AuthModal({ onClose }) {
+  const [isLogin, setIsLogin] = useState(true)
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setLoading(true)
+    setError(null)
+
+    try {
+      if (isLogin) {
+        const { error } = await supabase.auth.signInWithPassword({ email, password })
+        if (error) throw error
+        onClose()
+      } else {
+        const { error } = await supabase.auth.signUp({ email, password })
+        if (error) throw error
+        alert('Registro exitoso. Revisa tu correo o inicia sesión.')
+        setIsLogin(true)
+      }
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div className="modal-backdrop" onClick={onClose}>
+      <div className="modal-content form-modal glass" onClick={e => e.stopPropagation()}>
+        <button className="modal-close" onClick={onClose}>
+          <X size={22} strokeWidth={2.5} />
+        </button>
+        <h2 className="modal-title">{isLogin ? 'Iniciar Sesión' : 'Crear Cuenta'}</h2>
+        
+        <div className="auth-tabs">
+          <button type="button" className={`auth-tab ${isLogin ? 'active' : ''}`} onClick={() => setIsLogin(true)}>Entrar</button>
+          <button type="button" className={`auth-tab ${!isLogin ? 'active' : ''}`} onClick={() => setIsLogin(false)}>Registro</button>
+        </div>
+
+        {error && <div className="error-message" style={{marginBottom:16}}>{error}</div>}
+
+        <form className="auth-form" onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label>Correo Electrónico</label>
+            <input
+              type="email" required
+              className="form-input"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              placeholder="tu@correo.com"
+            />
+          </div>
+          <div className="form-group">
+            <label>Contraseña</label>
+            <input
+              type="password" required
+              className="form-input"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              placeholder="••••••••"
+            />
+          </div>
+          <button type="submit" className="btn-primary" style={{marginTop: 8, justifyContent:'center'}} disabled={loading}>
+            {loading ? <Loader2 className="spin" size={18} /> : (isLogin ? 'Entrar' : 'Registrarse')}
+          </button>
+        </form>
+      </div>
+    </div>
+  )
+}
+
+/* ── Movie Form Modal (Create/Edit) ───────────── */
+function MovieFormModal({ movie, onClose, onSave }) {
+  const [formData, setFormData] = useState(movie || {
+    title: '', description: '', genre: 'Acción', rating: 5, image_url: ''
+  })
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setLoading(true)
+    setError(null)
+
+    try {
+      if (movie?.id) {
+        const { error } = await supabase.from('movies').update(formData).eq('id', movie.id)
+        if (error) throw error
+      } else {
+        const { error } = await supabase.from('movies').insert([formData])
+        if (error) throw error
+      }
+      onSave()
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const GENRES = ['Acción','Drama','Ciencia Ficción','Crimen','Comedia','Fantasía','Suspense','Terror','Animación','Romance','Guerra','Misterio','Aventura','Historia','Western','Biografía']
+
+  return (
+    <div className="modal-backdrop" onClick={onClose}>
+      <div className="modal-content form-modal glass" onClick={e => e.stopPropagation()} style={{maxHeight:'90vh', overflowY:'auto'}}>
+        <button className="modal-close" onClick={onClose}>
+          <X size={22} strokeWidth={2.5} />
+        </button>
+        <h2 className="modal-title">{movie ? 'Editar Película' : 'Añadir Película'}</h2>
+        
+        {error && <div className="error-message" style={{marginBottom:16}}>{error}</div>}
+
+        <form className="auth-form" onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label>Título</label>
+            <input type="text" required className="form-input" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} />
+          </div>
+          <div className="form-group">
+            <label>Género</label>
+            <select className="form-input" style={{appearance:'none'}} value={formData.genre} onChange={e => setFormData({...formData, genre: e.target.value})}>
+              {GENRES.map(g => <option key={g} value={g} style={{color:'#000'}}>{g}</option>)}
+            </select>
+          </div>
+          <div className="form-group">
+            <label>Calificación (1-10)</label>
+            <input type="number" required min="1" max="10" step="0.1" className="form-input" value={formData.rating} onChange={e => setFormData({...formData, rating: e.target.value})} />
+          </div>
+          <div className="form-group">
+            <label>URL de la imagen (opcional)</label>
+            <input type="url" className="form-input" value={formData.image_url} onChange={e => setFormData({...formData, image_url: e.target.value})} placeholder="https://..." />
+          </div>
+          <div className="form-group">
+            <label>Descripción</label>
+            <textarea required className="form-input" rows={4} value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} />
+          </div>
+          
+          <button type="submit" className="btn-primary" style={{marginTop: 8, justifyContent:'center'}} disabled={loading}>
+            {loading ? <Loader2 className="spin" size={18} /> : 'Guardar Película'}
+          </button>
+        </form>
+      </div>
+    </div>
+  )
+}
 
 /* ── Navbar ───────────────────────────────────── */
-function Navbar() {
+function Navbar({ user, onOpenAuth, onLogout }) {
   const [solid, setSolid] = useState(false)
   useEffect(() => {
     const onScroll = () => setSolid(window.scrollY > 50)
@@ -28,10 +179,20 @@ function Navbar() {
           <a href="#que-sera">Características</a>
           <a href="#como-funciona">Cómo funciona</a>
         </div>
-        <a href="#buscar" className="btn-primary nav-cta">
-          <Search size={15} strokeWidth={2.5} />
-          Explorar
-        </a>
+        <div className="nav-actions">
+          {user ? (
+            <>
+              <span className="nav-user"><User size={15} strokeWidth={2.5}/> {user.email?.split('@')[0]}</span>
+              <button className="btn-ghost nav-btn" onClick={onLogout}>
+                Salir <LogOut size={14} strokeWidth={2.5} />
+              </button>
+            </>
+          ) : (
+            <button className="btn-primary nav-btn" onClick={onOpenAuth}>
+              <LogIn size={15} strokeWidth={2.5} /> Entrar
+            </button>
+          )}
+        </div>
       </div>
     </nav>
   )
@@ -104,13 +265,17 @@ function Hero() {
 /* ── Movie Search ──────────────────────────────── */
 const GENRES = ['Todos','Acción','Drama','Ciencia Ficción','Crimen','Comedia','Fantasía','Suspense','Terror','Animación','Romance','Guerra','Misterio','Aventura','Historia','Western','Biografía']
 
-function MovieSearch() {
+function MovieSearch({ user }) {
   const [query, setQuery] = useState('')
   const [genre, setGenre] = useState('Todos')
   const [movies, setMovies] = useState([])
   const [loading, setLoading] = useState(false)
   const [initial, setInitial] = useState(true)
   const [selectedMovie, setSelectedMovie] = useState(null)
+  
+  const [editingMovie, setEditingMovie] = useState(null)
+  const [isAdding, setIsAdding] = useState(false)
+
   const debounceRef = useRef(null)
 
   const fetchMovies = useCallback(async (searchQuery, selectedGenre) => {
@@ -155,6 +320,18 @@ function MovieSearch() {
     fetchMovies(query, g)
   }
 
+  const handleDelete = async (movie) => {
+    if (!confirm(`¿Seguro que quieres eliminar "${movie.title}"?`)) return
+    try {
+      const { error } = await supabase.from('movies').delete().eq('id', movie.id)
+      if (error) throw error
+      setSelectedMovie(null)
+      fetchMovies(query, genre)
+    } catch (err) {
+      alert('Error eliminando: ' + err.message)
+    }
+  }
+
   const renderStars = (rating) => {
     const stars = Math.round(Number(rating) / 2)
     return (
@@ -180,6 +357,14 @@ function MovieSearch() {
             Filtra por nombre o género para encontrar exactamente lo que quieres.
           </p>
         </div>
+
+        {user && (
+          <div className="add-movie-wrapper">
+            <button className="btn-primary nav-btn" onClick={() => setIsAdding(true)}>
+              <Plus size={16} strokeWidth={2.5}/> Añadir Película
+            </button>
+          </div>
+        )}
 
         {/* Search bar */}
         <div className="search-bar-wrapper">
@@ -264,7 +449,7 @@ function MovieSearch() {
       </div>
 
       {/* Movie detail modal */}
-      {selectedMovie && (
+      {selectedMovie && !editingMovie && (
         <div className="modal-backdrop" onClick={() => setSelectedMovie(null)}>
           <div className="modal-content glass" onClick={e => e.stopPropagation()}>
             <button className="modal-close" onClick={() => setSelectedMovie(null)}>
@@ -286,10 +471,36 @@ function MovieSearch() {
                   <span className="modal-rating-num">{Number(selectedMovie.rating).toFixed(1)}<span style={{color:'var(--t3)',fontWeight:400}}>/10</span></span>
                 </div>
                 <p className="modal-desc">{selectedMovie.description}</p>
+                
+                {user && (
+                  <div className="crud-actions">
+                    <button className="btn-edit" onClick={(e) => { e.stopPropagation(); setEditingMovie(selectedMovie); }}>
+                      <Edit size={16} strokeWidth={2} /> Editar
+                    </button>
+                    <button className="btn-danger" onClick={(e) => { e.stopPropagation(); handleDelete(selectedMovie); }}>
+                      <Trash2 size={16} strokeWidth={2} /> Eliminar
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>
         </div>
+      )}
+
+      {/* Forms */}
+      {isAdding && (
+        <MovieFormModal 
+          onClose={() => setIsAdding(false)} 
+          onSave={() => { setIsAdding(false); fetchMovies(query, genre); }} 
+        />
+      )}
+      {editingMovie && (
+        <MovieFormModal 
+          movie={editingMovie} 
+          onClose={() => setEditingMovie(null)} 
+          onSave={() => { setEditingMovie(null); setSelectedMovie(null); fetchMovies(query, genre); }} 
+        />
       )}
     </section>
   )
@@ -456,11 +667,29 @@ function Footer() {
 
 /* ── App ──────────────────────────────────────── */
 export default function App() {
+  const [user, setUser] = useState(null)
+  const [showAuth, setShowAuth] = useState(false)
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null)
+    })
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null)
+    })
+    return () => subscription.unsubscribe()
+  }, [])
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut()
+  }
+
   return (
     <>
-      <Navbar />
+      <Navbar user={user} onOpenAuth={() => setShowAuth(true)} onLogout={handleLogout} />
+      {showAuth && <AuthModal onClose={() => setShowAuth(false)} />}
       <Hero />
-      <MovieSearch />
+      <MovieSearch user={user} />
       <Features />
       <HowItWorks />
       <CTA />
