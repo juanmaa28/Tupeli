@@ -349,10 +349,18 @@ body {
 .cta-note { font-size:0.78rem; color:var(--t3); position:relative;z-index:1; }
 
 /* ══════════════════════════════════════
+   DASHBOARD WRAPPER
+══════════════════════════════════════ */
+.dashboard-wrapper {
+  padding-top: 100px;
+  min-height: 100vh;
+}
+
+/* ══════════════════════════════════════
    MOVIE SEARCH
 ══════════════════════════════════════ */
 .search-section {
-  padding: 100px 0;
+  padding: 60px 0 100px;
   background: linear-gradient(180deg, var(--bg) 0%, rgba(109,40,217,.04) 50%, var(--bg) 100%);
 }
 .search-header {

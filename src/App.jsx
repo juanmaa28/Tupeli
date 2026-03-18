@@ -174,11 +174,18 @@ function Navbar({ user, onOpenAuth, onLogout }) {
           <span className="nav-logo-icon"><Clapperboard size={26} strokeWidth={2.2} /></span>
           <span className="nav-logo-text">Tu<em>Peli</em></span>
         </a>
-        <div className="nav-links-desktop">
-          <a href="#buscar">Buscar películas</a>
-          <a href="#que-sera">Características</a>
-          <a href="#como-funciona">Cómo funciona</a>
-        </div>
+        {user ? (
+          /* Dashboard nav links */
+          <div className="nav-links-desktop">
+            <a href="#buscar">Buscar películas</a>
+          </div>
+        ) : (
+          /* Landing nav links */
+          <div className="nav-links-desktop">
+            <a href="#que-sera">Características</a>
+            <a href="#como-funciona">Cómo funciona</a>
+          </div>
+        )}
         <div className="nav-actions">
           {user ? (
             <>
@@ -199,7 +206,7 @@ function Navbar({ user, onOpenAuth, onLogout }) {
 }
 
 /* ── Hero ─────────────────────────────────────── */
-function Hero() {
+function Hero({ onOpenAuth }) {
   return (
     <section className="hero" id="hero">
       <div className="hero-bg">
@@ -230,10 +237,10 @@ function Hero() {
           </p>
 
           <div className="hero-actions">
-            <a href="#buscar" className="btn-primary">
-              <Search size={17} strokeWidth={2.5} />
-              Buscar películas
-            </a>
+            <button className="btn-primary" onClick={onOpenAuth}>
+              <LogIn size={17} strokeWidth={2.5} />
+              Comenzar ahora
+            </button>
             <a href="#que-sera" className="btn-ghost">
               Ver características
               <ChevronRight size={16} strokeWidth={2.5} />
@@ -689,12 +696,25 @@ export default function App() {
     <>
       <Navbar user={user} onOpenAuth={() => setShowAuth(true)} onLogout={handleLogout} />
       {showAuth && <AuthModal onClose={() => setShowAuth(false)} />}
-      <Hero />
-      <MovieSearch user={user} />
-      <Features />
-      <HowItWorks />
-      <CTA />
-      <Footer />
+
+      {user ? (
+        /* ─── Dashboard (authenticated) ─── */
+        <>
+          <div className="dashboard-wrapper">
+            <MovieSearch user={user} />
+          </div>
+          <Footer />
+        </>
+      ) : (
+        /* ─── Landing page (unauthenticated) ─── */
+        <>
+          <Hero onOpenAuth={() => setShowAuth(true)} />
+          <Features />
+          <HowItWorks />
+          <CTA />
+          <Footer />
+        </>
+      )}
     </>
   )
 }
