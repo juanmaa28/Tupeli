@@ -295,6 +295,7 @@ function MovieSearch({ user }) {
       setMovies(data || [])
     } catch (err) {
       console.error('Error fetching movies:', err)
+      alert('Error cargando películas: ' + err.message)
       setMovies([])
     } finally {
       setLoading(false)
